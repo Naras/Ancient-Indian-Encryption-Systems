@@ -36,7 +36,7 @@ for (x,z) in zip((numbers(1, delta1(), l * m)),range(l)):
     c = hidden_text[z]
     CA.insert_at(Cell(c),x)
     hiding_text+=str(CA.get_at(x))
-print 'hiding ->' + hiding_text
+print('hiding ->' + hiding_text)
 
 plain_text = ''
 plainseq = []
@@ -54,10 +54,10 @@ s = ''
 for cel in CA.generator():
     if cel.isEmpty(): s += '.'
     else: s += cel.get()
-print 'cell array size.. ' + str(CA.size()) +  ' content..\n' + s
+print('cell array size.. ' + str(CA.size()) +  ' content..\n' + s)
 CA.fillRandomNulls()
 s=''
 for cel in CA.generator():
     if cel.isEmpty(): s += '.'
     else: s += cel.get()
-print 'cell array size.. ' + str(CA.size()) +  ' ..\n' + s
+print('cell array size.. ' + str(CA.size()) +  ' ..\n' + s)

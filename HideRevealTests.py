@@ -24,20 +24,27 @@ def main():
     hide_inplace(grid,grid.rowByrowBandha(xy(0,0)),plain[0][:-1]) #'my name is')
     hide_inplace(grid,grid.mukhaBandha(xy(0,26)),plain[1][:-1]) #'anthony gonsalves')
     hide_inplace(grid,grid.diagonalBandha(xy(32,0)),plain[2][:-1]) #'main duniya  mein akela hun')
-    # print reveal(grid,grid.rowByrowBandha(xy(0,0)),25)
-    # print reveal(grid,grid.mukhaBandha(xy(0,26)),30)
-    # print reveal(grid,grid.diagonalBandha(xy(32,0)),30)
-    # print show(grid)
-    # print 'cell grid size.. ' + str(grid.size()) +  ' content..\n' + show(grid)
+    # print(reveal(grid,grid.rowByrowBandha(xy(0,0)),25))
+    # print(reveal(grid,grid.mukhaBandha(xy(0,26)),30))
+    # print(reveal(grid,grid.diagonalBandha(xy(32,0)),30))
+    # print(show(grid))
+    # print('cell grid size.. ' + str(grid.size()) +  ' content..\n' + show(grid))
 
-    # print 'cell grid size.. ' + str(grid.size()) +  ' content..\n' + export(grid)
+    # print('cell grid size.. ' + str(grid.size()) +  ' content..\n' + export(grid))
 
     exportTofile(grid,'export.txt')
     grid = importFromfile('export.txt')
-    # print 'cell grid size.. ' + str(grid.size()) +  ' content..\n' + show(grid)
-    print reveal(grid,grid.rowByrowBandha(xy(0,0)),25)
-    print reveal(grid,grid.mukhaBandha(xy(0,26)),30)
-    print reveal(grid,grid.diagonalBandha(xy(32,0)),30)
+    # print('cell grid size.. ' + str(grid.size()) +  ' content..\n' + show(grid))
+    print(reveal(grid,grid.rowByrowBandha(xy(0,0)),25))
+    print(reveal(grid,grid.mukhaBandha(xy(0,26)),30))
+    print(reveal(grid,grid.diagonalBandha(xy(32,0)),30))
+
+    exportTofile(grid,'export.txt',include_size=False)
+    grid = importFromfile('export.txt',size=(55,55))
+    # print('cell grid size.. ' + str(grid.size()) +  ' content..\n' + show(grid))
+    print(reveal(grid,grid.rowByrowBandha(xy(0,0)),25))
+    print(reveal(grid,grid.mukhaBandha(xy(0,26)),30))
+    print(reveal(grid,grid.diagonalBandha(xy(32,0)),30))
 
 
 

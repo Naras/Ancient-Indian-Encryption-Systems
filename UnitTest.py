@@ -5,7 +5,7 @@ from BaseModel import *
 # 1. Create and manipulate cells
 samp = Cell(None)
 samp.set('setted')
-print 'samp ' + str(samp.size()) + '..' + str(samp)
+print('samp ' + str(samp.size()) + '..' + str(samp))
 
 # 2. Create and manipulate Cell Arrays
 CA = CellArray([Cell('one'),Cell(2),Cell('four')])
@@ -16,7 +16,7 @@ CA.modify_at([Cell('many'),Cell('notmany')],1)
 CA.remove([Cell('four'),Cell(5)])
 CA.remove_at(5)
 
-# print cell array content
+# print(cell array content)
 s=''
 for ss in CA.generator():
     s += str(ss) + '(size ' + str(ss.size()) +  '),'
@@ -30,7 +30,7 @@ CG.modify_at([Cell('last-but-one'),Cell('last')],xy(1,2))
 CG.remove_at(xy(2,2))
 
 cg_as_string,i = '',0
-# print Cell Grid content, each row in a line
+# print(Cell Grid content, each row in a line)
 for cel in CG.get().generator():
     if i >= CG.size().getx() - 1:
         i = 0
@@ -41,9 +41,9 @@ for cel in CG.get().generator():
     cg_as_string += str(cel) + '(size ' + str(cel.size()) +  ')' + separator
 print('\nfinally..cell grid size.. ' + str(CG.size()) +  ' content..\n' + cg_as_string[:-1])
 
-print ('diagonal Bandha..')
+print(('diagonal Bandha..'))
 for xy in CG.diagonalBandha(): print(xy)
-print ('rowByrow Bandha..')
+print(('rowByrow Bandha..'))
 for xy in CG.rowByrowBandha(): print(xy)
-print ('mukha Bandha..')
+print(('mukha Bandha..'))
 for xy in CG.mukhaBandha(): print(xy)

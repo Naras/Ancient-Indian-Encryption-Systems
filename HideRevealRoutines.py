@@ -12,7 +12,7 @@ def hide(grid,bandha,text):
         grid.insert_at(Cell(c),xy)
         # logging.debug('size now..' + str(grid.size()))
         # hiding_text += str(grid.get_at(xy))
-    # print str(len(text)) + '-' + hiding_text
+    # print(str(len(text)) + '-' + hiding_text)
     s=''
     for xy in cipherseq: s += str(xy)
     logging.info('Parameters %s hider sequence %s',grid.lastUsedParameters(),s)
@@ -28,9 +28,9 @@ def hide_inplace(grid,bandha,text):
     logging.info('Parameters %s hider sequence %s',grid.lastUsedParameters(),s)
 def reveal(grid,bandha,len_text):
     plain_text = ''
-    plainseq = []
+    # plainseq = []
     for (xy,z) in zip(bandha,range(len_text)):
-        plainseq.append(xy)
+        # plainseq.append(xy)
         plain_text += str(grid.get_at(xy))
     # s=''
     # for xy in plainseq: s+=str(xy)
@@ -54,26 +54,30 @@ def show(grid):
         # else:
         grid_string += str(cel) + separator
     return grid_string
-def exportTofile(grid,file):
+def exportTofile(grid,file,include_size=True):
     grid.get().fillRandomNulls()
     grid_string = ''
     for cel in grid.get().generator():
         grid_string += str(cel)
     f = open(file,'w')
-    f.write(str(grid.size())+'\n')
+    if include_size: f.write(str(grid.size())+'\n')
     f.write(grid_string)    # write the grid contents to file
     f.close()
     logging.info('exported to file - ' + file + '.. grid size %s',str(grid.size()))
     return 0
-def importFromfile(file):
+def importFromfile(file,size=None):
     f = open(file)
-    size = f.readline()
-    comma = size.index(',')
-    rowsize = int(size[1:comma])
-    colsize = int(size[comma+1:-2])
-    grid = CellGrid(colsize,rowsize)
+    if size==None:
+        size = f.readline()
+        comma = size.index(',')
+        rowsize = int(size[1:comma])
+        colsize = int(size[comma+1:-2])
+        grid = CellGrid(colsize,rowsize)
+    else:
+        colsize,rowsize=size
+        grid = CellGrid(colsize,rowsize)
     grid_string = f.readline()
-    # print grid_string
+    # print(grid_string)
     x,y = 0,0
     for c in grid_string:
         grid.modify_at(Cell(c),xy(x,y))
