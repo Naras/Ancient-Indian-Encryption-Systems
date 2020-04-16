@@ -156,9 +156,9 @@ class CellArray:
             cell.clear()
         self.__cellsEmpty = True
         self.__empty = False
-    def generator(self):
-        for index in range(len(self.__content)):
-            yield(self.__content[index])
+    # def generator(self):
+    #     for index in range(len(self.__content)):
+    #         yield(self.__content[index])
     # def __repr__(self):
     #     return self.content
     def __str__(self):
@@ -188,6 +188,8 @@ class CellGrid:
     __empty = True
     __cellsEmpty = True
     __lastUsedParameters = ('',0,0)
+    __currentcol = 0
+    __currentrow = 0
     def __sizerecalc__(self):
         __rows = self.__colsize
         __cols = self.__rowsize
@@ -215,70 +217,51 @@ class CellGrid:
         # if l % self.__rowsize > 0: r += 1
         # self.__rowsize += r
         return xy(self.__rowsize,self.__colsize)
+    def __index(self, XY):
+        if XY.getx() >= self.__rowsize or XY.gety() >= self.__colsize:
+            raise IndexError('Index error x,y ' + str(XY) + ' size ' + str(self.size()) + ' content:' + str(self))
+        return XY.gety() * self.__rowsize + XY.getx()
     def get_at(self,XY):
         if isinstance(XY,xy):
-            return self.__content.get_at(XY.getx() * self.__rowsize + XY.gety())
+            return self.__content.get_at(self.__index(XY))
         else:
            raise TypeError('Argument should be an XY coordinate pair, but is..' + str(type(XY)))
     def remove_at(self,XY):
         if isinstance(XY,xy):
-            if (XY.getx() >= self.__colsize or XY.gety() >= self.__rowsize):
-                raise IndexError('Index (' + str(XY.getx()) + ',' + str(XY.gety()) + ') out of grid bounds ..' + str(self.size()) )
-            index = XY.getx() * self.__rowsize + XY.gety()
-            # if index in range(self.size()):
-            self.__content.remove_at(index)
+            self.__content.remove_at(self.__index(XY))
             self.__sizerecalc__()
-            # else:
-            #     raise IndexError('Index (' + str(XY.getx()) + ',' + str(XY.gety()) + ') out of bounds 0..' + str(self.size()) )
         else:
            raise TypeError('Argument should be an XY coordinate pair, but is..' + str(type(XY)))
     def insert_at(self,arg,XY):  # insert a cell or a list of cells in a particular position
         if isinstance(XY,xy):
-            if (XY.getx() >= self.__colsize or XY.gety() >= self.__rowsize):
-                raise IndexError('Index (' + str(XY.getx()) + ',' + str(XY.gety()) + ') out of grid bounds ..' + str(self.size()) )
-            index = XY.getx() * self.__rowsize + XY.gety()
             if isinstance(arg,list):
-                # if index in range(self.__rowsize * self.__colsize):
-                    for item in arg:
-                     self.__content.insert_at(item,index)
-                     index += 1
-                    self.__sizerecalc__()
-                # else:
-                #     raise IndexError('Index (' + str(XY.getx()) + ',' + str(XY.gety()) + ') out of grid bounds ..' + str(self.size()) )
+                indx = self.__index(XY)
+                for item in arg:
+                    self.__content.insert_at(item,indx)
+                    indx += 1
+                self.__sizerecalc__()
             elif isinstance(arg, Cell):
-                # if index in range(self.__rowsize * self.__colsize):
-                    self.__content.insert_at(arg,index)
+                    self.__content.insert_at(arg, self.__index(XY))
                     self.__sizerecalc__()
-                # else:
-                #     raise IndexError('Index (' + str(XY.getx()) + ',' + str(XY.gety()) + ') out of bounds 0..' + str(self.size()) )
             else:
                 raise TypeError('Argument should be a Cell, but is..' + str(type(arg)))
         else:
            raise TypeError('Argument 2 should be an (x,y) coordinate, but is..' + str(type(XY)))
     def modify_at(self,arg,XY):  # insert a cell or a list of cells in a particular position
         if isinstance(XY,xy):
-            if (XY.getx() >= self.__colsize or XY.gety() >= self.__rowsize):
-                raise IndexError('Index (' + str(XY.getx()) + ',' + str(XY.gety()) + ') out of grid bounds ..' + str(self.size()) )
-            index = XY.getx() * self.__rowsize + XY.gety()
-            if isinstance(arg,list):
-                # if index in range(self.__rowsize * self.__colsize):
-                    self.__content.modify_at(arg[0],index)
-                    index += 1
-                    for item in arg[1:]:
-                        self.__content.insert_at(item,index)
-                        index += 1
-                    self.__sizerecalc__()
-                # else:
-                #     raise IndexError('Index (' + str(XY.getx()) + ',' + str(XY.gety()) + ') out of bounds 0..' + str(self.size()) )
-            elif isinstance(arg, Cell):
-                # if index in range(self.__rowsize * self.__colsize):
-                    self.__content.modify_at(arg,index)
-            #     else:
-            #         raise IndexError('Index (' + str(XY.getx()) + ',' + str(XY.gety()) + ') out of bounds 0..' + str(self.size()) )
-            # # else:
-            #     raise TypeError('Argument should be a Cell, but is..' + str(type(arg)))
+           if isinstance(arg,list):
+            indx = self.__index(XY)
+            self.__content.modify_at(arg[0],indx)
+            indx += 1
+            for item in arg[1:]:
+                self.__content.insert_at(item, indx)
+                indx += 1
+            self.__sizerecalc__()
+           elif isinstance(arg, Cell):
+               # print('modify_at:'+ str(XY) + '=' + str(self.__index(XY)))
+               self.__content.modify_at(arg, self.__index(XY))
         else:
-           raise TypeError('Argument 2 should be an (x,y) coordinate, but is..' + str(type(XY)))
+            raise TypeError('Argument 2 should be an (x,y) coordinate, but is..' + str(type(XY)))
     def isEmpty(self):
         return self.__empty
     def allCellsEmpty(self):
@@ -294,20 +277,42 @@ class CellGrid:
             cell.clear()
         self.__cellsEmpty = True
         self.__empty = False
+    # def generator(self):
+    #     for x in range(self.__colsize):
+    #         for y in range(self.__rowsize):
+    #             yield self.__content.get_at(x * self.__rowsize + y)
+    def __iter__(self):
+        return self
+    def __next__(self):
+        self.__sizerecalc__()
+        if self.__currentcol >= self.__rowsize:
+            self.__currentcol = 0
+            self.__currentrow += 1
+            if self.__currentrow >= self.__colsize:
+                self.__currentrow = 0
+                raise StopIteration
+        index = self.__currentrow * self.__rowsize + self.__currentcol
+        self.__currentcol += 1
+        # print(self.__currentrow,self.__currentcol,self.__rowsize,self.__colsize, index)
+        return self.__currentrow, self.__currentcol-1, self.__content.get_at(index)
     def __str__(self):
-        return ''.join(str(self.__content))
+        return ','.join([str(cel) for cel in self.__content.get()])
     def diagonalBandha(self,XY=xy(0,0)):
         self.__lastUsedParameters = ('diagonal Bandha',XY.getx(),XY.gety())
         for (x,y) in zip(range(XY.getx(),self.__rowsize),range(XY.gety(),self.__colsize)):
                 yield xy(x,y)
     def rowByrowBandha(self,XY=xy(0,0)):
         self.__lastUsedParameters = ('row by row Bandha',XY.getx(),XY.gety())
-        for x in range(XY.getx(),self.__colsize):
-            for y in range(XY.gety(),self.__rowsize):
+        for y in range(XY.gety(), self.__colsize):
+            for x in range(XY.getx(),self.__rowsize):
                 yield xy(x,y)
     def mukhaBandha(self,XY=xy(0,0)):
         self.__lastUsedParameters = ('mukha Bandha',XY.getx(),XY.gety())
-        for y in range(XY.gety(),self.__rowsize):
-            for x in range(XY.getx(),self.__colsize):
+        for x in range(XY.getx(), self.__rowsize):
+            for y in range(XY.gety(),self.__colsize):
                 yield xy(x,y)
     def lastUsedParameters(self): return self.__lastUsedParameters
+    def bandhas(self,XY):
+        return {'rowByrowBandha':self.rowByrowBandha(XY), 'mukhabBandha':self.mukhaBandha(XY), 'diagnonalBandha':self.diagonalBandha(XY)}
+    def bandhaLiterals(self):
+        return ['rowByrowBandha','mukhabBandha','diagnonalBandha']

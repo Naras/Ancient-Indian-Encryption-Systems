@@ -187,17 +187,17 @@ class MainWindow(QMainWindow):
      self.statusBar().showMessage('Grid removed')
  def gridShow(self):
      try:
-         r = self.__grid.size().getx()
-         c = self.__grid.size().gety()
+         y_range = self.__grid.size().getx()
+         x_range = self.__grid.size().gety()
      except Exception as e:
          qApp.quit()
      try:
          if self.__tableWidget == None:
              self.statusBar().showMessage('menu show .. no grid')
          else:
-             for i in range(r):
-                 for j in range(c):
-                     self.__tableWidget.setItem(i, j, QTableWidgetItem(str(self.__grid.get_at(xy(i, j)))))
+             for y in range(y_range):
+                 for x in range(x_range):
+                     self.__tableWidget.setItem(x, y, QTableWidgetItem(str(self.__grid.get_at(xy(y, x)))))
      except Exception as e:
          self.statusBar().showMessage('show grid .. failed .. exception ', e)
      # self.statusBar().showMessage("grid size %s", self.__grid.size())
@@ -205,23 +205,21 @@ class MainWindow(QMainWindow):
      global grid
      grid = self.__grid
      dialog = modalHide(self)
-     # print(dialog.ok.text())
      if dialog.ok.text()=='Ok':
-         # print('if ok yay')
-         row = dialog.startX.value()
-         col = dialog.startY.value()
-         # print('row {} col {} text {}'.format(row,col, dialog.bandha.text()))
-         if dialog.bandha.text() == '1-row by row':
-             bandhaUsed = self.__grid.rowByrowBandha(xy(row, col))
-         elif dialog.bandha.text() == '2-mukhabandha':
-             bandhaUsed = self.__grid.mukhaBandha(xy(row, col))
-         elif dialog.bandha.text() == '3-diagonal':
-             bandhaUsed = self.__grid.diagonalBandha(xy(row, col))
+         x = dialog.startX.value()
+         y = dialog.startY.value()
+         if dialog.bandha.text() in self.__grid.bandhas(xy(x,y)).keys():
+             bandhaCopy = self.__grid.bandhas(xy(x, y))[dialog.bandha.text()]
+             bandhaUsed = self.__grid.bandhas(xy(x,y))[dialog.bandha.text()]
          else:
              self.statusBar().showMessage("Invalid Bandha selection{}".format(dialog.bandha.text()))
              return
          try:
-             HideRevealRoutines.hide_inplace(self.__grid, bandhaUsed, self.__textEdit.toPlainText())
+             if HideRevealRoutines.it_fits_in(self.__grid, bandhaCopy, self.__textEdit.toPlainText()):
+                 HideRevealRoutines.hide_inplace(self.__grid, bandhaUsed, self.__textEdit.toPlainText())
+             else:
+                 self.statusBar().showMessage('cannot fit in full text into bandha, parameters {} text: {}'.format(self.__grid.lastUsedParameters(),self.__textEdit.toPlainText()))
+                 return
          except Exception as ex:
              self.statusBar().showMessage('Failed..' + str(ex))
              return
@@ -232,19 +230,13 @@ class MainWindow(QMainWindow):
          self.statusBar().showMessage("cancelled")
  def gridReveal(self):
      dialog = modalReveal(self)
-     # print(dialog.ok.text())
      if dialog.ok.text()=='Ok':
-         # print('if ok yay')
-         row = dialog.startX.value()
-         col = dialog.startY.value()
+         x = dialog.startX.value()
+         y = dialog.startY.value()
          textLength = dialog.length.value()
-         # print('row {} col {} text {}'.format(row,col, dialog.bandha.text()))
-         if dialog.bandha.text() == '1-row by row':
-             bandhaUsed = self.__grid.rowByrowBandha(xy(row, col))
-         elif dialog.bandha.text() == '2-mukhabandha':
-             bandhaUsed = self.__grid.mukhaBandha(xy(row, col))
-         elif dialog.bandha.text() == '3-diagonal':
-             bandhaUsed = self.__grid.diagonalBandha(xy(row, col))
+         if dialog.bandha.text() in self.__grid.bandhaLiterals():
+             bandhas = [self.__grid.rowByrowBandha(xy(x, y)), self.__grid.mukhaBandha(xy(x, y)), self.__grid.diagonalBandha(xy(x, y))]
+             bandhaUsed = bandhas[self.__grid.bandhaLiterals().index(dialog.bandha.text())]
          else:
              self.statusBar().showMessage("Invalid Bandha selection {}".format(dialog.bandha.text()))
              return
@@ -269,10 +261,10 @@ class modalHide(QDialog):
      self.ok = QLabel()
      self.ok.setText('Ok not clicked yet')
      self.__bandhas = QComboBox(self)
-     self.__bandhas.addItems(['1-row by row', '2-mukhabandha', '3-diagonal'])
+     self.__bandhas.addItems(grid.bandhaLiterals())
      self.__bandhas.currentIndexChanged.connect(self.bandhaSelected)
      self.bandha = QLabel(self)
-     self.bandha.setText('1-row by row')
+     self.bandha.setText(self.__bandhas.itemText(0))
      self.__lblstartX = QLabel()
      self.__lblstartX.setText('X Start')
      self.__lblstartY = QLabel()
@@ -329,22 +321,21 @@ class modalHide(QDialog):
 
     def okClicked(self):
      self.ok.setText('Ok')
-     # print('ok:', self.ok.text(), 'x:', self.startX.value(), 'y:', self.startY.value())
      self.close()
 
     def createTable(self):
         # Create table
         try:
-            r = grid.size().getx()
-            c = grid.size().gety()
+            c = grid.size().getx()
+            r = grid.size().gety()
         except Exception as e:
             print('create table widget .. failed .. exception ',e)
             qApp.quit()
-        self.tableWidget = QTableWidget(r,c)
+        self.tableWidget = QTableWidget(c,r)
         try:
-            for i in range(r):
-                for j in range(c):
-                    self.tableWidget.setItem(i, j, QTableWidgetItem(str(grid.get_at(xy(i,j)))))
+            for i in range(c):
+                for j in range(r):
+                    self.tableWidget.setItem(j, i, QTableWidgetItem(str(grid.get_at(xy(i,j)))))
         except Exception as e:
             print('failed .. exception ', e)
         # self.tableWidget.move(0, 0)
@@ -354,9 +345,10 @@ class modalHide(QDialog):
 
     @pyqtSlot()
     def on_click(self):
-        print("\n")
         for currentQTableWidgetItem in self.tableWidget.selectedItems():
-            print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
+            # print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
+            self.startX.setValue(currentQTableWidgetItem.column())
+            self.startY.setValue(currentQTableWidgetItem.row())
 
 class modalReveal(QDialog):
     global grid
@@ -366,12 +358,12 @@ class modalReveal(QDialog):
      okBtn.setText('Ok')
      okBtn.clicked.connect(self.okClicked)
      self.ok = QLabel()
-     self.ok.setText('Not Ok')
+     self.ok.setText('Ok not clicked yet')
      self.__bandhas = QComboBox(self)
-     self.__bandhas.addItems(['1-row by row', '2-mukhabandha', '3-diagonal'])
+     self.__bandhas.addItems(grid.bandhaLiterals())
      self.__bandhas.currentIndexChanged.connect(self.bandhaSelected)
      self.bandha = QLabel(self)
-     self.bandha.setText('1-row by row')
+     self.bandha.setText(self.__bandhas.itemText(0))
      self.__lblstartX = QLabel()
      self.__lblstartX.setText('X Start')
      self.__lblstartY = QLabel()
@@ -438,16 +430,16 @@ class modalReveal(QDialog):
     def createTable(self):
         # Create table
         try:
-            r = grid.size().getx()
-            c = grid.size().gety()
+            y_range = grid.size().getx()
+            x_range = grid.size().gety()
         except Exception as e:
             print('create table widget .. failed .. exception ',e)
             qApp.quit()
-        self.tableWidget = QTableWidget(r,c)
+        self.tableWidget = QTableWidget(y_range,x_range)
         try:
-            for i in range(r):
-                for j in range(c):
-                    self.tableWidget.setItem(i, j, QTableWidgetItem(str(grid.get_at(xy(i,j)))))
+            for y in range(y_range):
+                for x in range(x_range):
+                    self.tableWidget.setItem(x, y, QTableWidgetItem(str(grid.get_at(xy(y,x)))))
         except Exception as e:
             print('failed .. exception ', e)
         # self.tableWidget.move(0, 0)
@@ -470,9 +462,9 @@ class modalReveal(QDialog):
 
     @pyqtSlot()
     def on_click(self):
-        print("\n")
         for currentQTableWidgetItem in self.tableWidget.selectedItems():
-            print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
+            self.startX.setValue(currentQTableWidgetItem.column())
+            self.startY.setValue(currentQTableWidgetItem.row())
 
 
 def main():
