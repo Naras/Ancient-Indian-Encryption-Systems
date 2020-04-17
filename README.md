@@ -1,0 +1,2 @@
+# Samjna
+* An Encryption/Decryption System based on Chakras and Bandhas. One can hide messages in given area (x1,y1)-(x2,y2) of a grid (matrix) of a given size with a given Bandha (traversal algorithm). Another authorized user can decrypt using the same parameters used to encrypt the messages. These parameters constitute a shared key set. Several messages can be hidden/revealed in a grid of a given size.
