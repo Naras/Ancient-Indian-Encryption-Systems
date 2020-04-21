@@ -17,17 +17,17 @@ class MainWindow(QMainWindow):
     super(MainWindow, self).__init__(parent)
     self.__grid = None
     self.__labelx = QLabel(self)
-    self.__labelx.setText('rows    ')
+    self.__labelx.setText('columns ')
     self.__spinx = QSpinBox(self)
-    self.__spinx.setValue(55)
+    self.__spinx.setValue(62)
     self.__sliderx = QSlider(Qt.Horizontal, self)
-    self.__sliderx.setValue(55)
+    self.__sliderx.setValue(62)
     self.__sliderx.setFocusPolicy(Qt.NoFocus)
     self.__sliderx.valueChanged[int].connect(self.changeValueX)
     self.__labely = QLabel(self)
-    self.__labely.setText('columns')
-    self.startY = QSpinBox(self)
-    self.startY.setValue(55)
+    self.__labely.setText('rows     ')
+    self.__spiny = QSpinBox(self)
+    self.__spiny.setValue(55)
     self.__slidery = QSlider(Qt.Horizontal, self)
     self.__slidery.setFocusPolicy(Qt.NoFocus)
     self.__slidery.setValue(55)
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
     self.__texts.addItems(list(plain))
     self.__texts.setCurrentIndex(0)
     self.__texts.currentIndexChanged.connect(self.plaintextSelected)
-    self.__textEdit.setText(self.__texts.currentText())
+    self.__textEdit.setText(plain[0])
 
     hboxText = QHBoxLayout()
     hboxText.addWidget(self.__textEdit)
@@ -60,38 +60,43 @@ class MainWindow(QMainWindow):
 
     hboxY = QHBoxLayout()
     hboxY.addWidget(self.__labely)
-    hboxY.addWidget(self.startY)
+    hboxY.addWidget(self.__spiny)
     hboxY.addWidget(self.__slidery)
 
-    # self.win_widget = WinWidget(self)
     widget = QWidget()
     self.__vlayout = QVBoxLayout(widget)
     self.__vlayout.addLayout(hboxText)
     self.__vlayout.addLayout(self.__hboxTexts)
     self.__vlayout.addLayout(hboxX)
     self.__vlayout.addLayout(hboxY)
-    # layout.addWidget(self.win_widget)
 
     self.setCentralWidget(widget)
     self.statusBar().showMessage('Ready')
     self.toolbar = self.addToolBar('Exit')
 
     createAction = QAction ('Create', self)
-    createAction.setShortcut('Ctrl+Q')
+    # createAction.setShortcut('Ctrl+Q')
     createAction.setStatusTip('Create a grid(table) of size <rows,columns>')
     createAction.triggered.connect(self.gridCreate)
     self.toolbar = self.addToolBar('Create')
     self.toolbar.addAction(createAction)
 
     removeAction = QAction('Remove', self)
-    removeAction.setShortcut('Ctrl+M')
+    # removeAction.setShortcut('Ctrl+M')
     removeAction.setStatusTip('Remove created grid')
     removeAction.triggered.connect(self.gridRemove)
     self.toolbar = self.addToolBar('Remove')
     self.toolbar.addAction(removeAction)
 
+    emptyAction = QAction('Empty', self)
+    # emptyAction.setShortcut('Ctrl+M')
+    emptyAction.setStatusTip('Empty filled grid')
+    emptyAction.triggered.connect(self.gridEmpty)
+    self.toolbar = self.addToolBar('Empty')
+    self.toolbar.addAction(emptyAction)
+
     self.__hideAction = QAction ('Hide', self)
-    self.__hideAction.setShortcut('Ctrl+Q')
+    # self.__hideAction.setShortcut('Ctrl+Q')
     self.__hideAction.setStatusTip('Hide plain text in grid at <row,column>')
     self.__hideAction.triggered.connect(self.gridHide)
     self.__hideAction.setDisabled(True)
@@ -99,7 +104,7 @@ class MainWindow(QMainWindow):
     self.toolbar.addAction(self.__hideAction)
 
     self.__revealAction = QAction ('Reveal', self)
-    self.__revealAction.setShortcut('Ctrl+D')
+    # self.__revealAction.setShortcut('Ctrl+D')
     self.__revealAction.setStatusTip('Reveal hidden text in grid at <row,column>')
     self.__revealAction.triggered.connect(self.gridReveal)
     self.__revealAction.setDisabled(True)
@@ -107,12 +112,28 @@ class MainWindow(QMainWindow):
     self.toolbar.addAction(self.__revealAction)
 
     self.__showAction = QAction ('Show', self)
-    self.__showAction.setShortcut('Ctrl+W')
+    # self.__showAction.setShortcut('Ctrl+W')
     self.__showAction.setStatusTip('Show grid with current content')
     self.__showAction.triggered.connect(self.gridShow)
     self.__showAction.setDisabled(True)
     self.toolbar = self.addToolBar('Show')
     self.toolbar.addAction(self.__showAction)
+
+    self.__displayAction = QAction ('Display', self)
+    # self.__displayAction.setShortcut('Ctrl+P')
+    self.__displayAction.setStatusTip('Display Grid as Text Area')
+    self.__displayAction.triggered.connect(self.gridDisplay)
+    self.__displayAction.setDisabled(True)
+    self.toolbar = self.addToolBar('Display')
+    self.toolbar.addAction(self.__displayAction)
+
+    self.__exportAction = QAction ('Noise-fill', self)
+    # self.__exportAction.setShortcut('Ctrl+P')
+    self.__exportAction.setStatusTip('Noise-fill Grid and display to Text Area')
+    self.__exportAction.triggered.connect(self.gridExport)
+    self.__exportAction.setDisabled(True)
+    self.toolbar = self.addToolBar('Export')
+    self.toolbar.addAction(self.__exportAction)
 
     helpAction = QAction('Help', self)
     helpAction.setShortcut('Ctrl+P')
@@ -132,40 +153,42 @@ class MainWindow(QMainWindow):
     # self.setWindowIcon (QIcon('logo.png'))
     self.show()
  def callback_help(self):
-     self.__textEdit.setText("Create a grid(table) of size <rows,columns>\nRemove a grid\nHide plain text given in grid at <row,col>\nReveal encrypted text at <row,col>")
+     self.__textEdit.setText("1. Create a grid(table) of size <rows,columns>\n2. Remove a grid\n3. Hide plain text given in grid at <row,col>\n4. Reveal encrypted text at <row,col>\n5. Show grid as it is\n6. Display grid as text\n7. Display noise-filled grid as text")
      # self.statusBar().showMessage("Click a button to create/remove grid, hide/reveal text")
-
  def changeValueX(self, value):
      self.__spinx.setValue(value)
  def changeValueY(self, value):
-     self.startY.setValue(value)
+     self.__spiny.setValue(value)
  def createTable(self):
         # Create table
         try:
-            r = self.__grid.size().getx()
-            c = self.__grid.size().gety()
+            y_range = self.__grid.size().getx()
+            x_range = self.__grid.size().gety()
         except Exception as e:
             print('menu table .. failed .. exception ',e)
             qApp.quit()
         if self.__tableWidget == None:
-            self.__tableWidget = QTableWidget(r,c)
+            self.__tableWidget = QTableWidget(y_range,x_range)
             try:
-                for i in range(r):
-                    for j in range(c):
-                        self.__tableWidget.setItem(i, j, QTableWidgetItem(str(self.__grid.get_at(xy(i,j)))))
+                for y in range(y_range):
+                    for x in range(x_range):
+                        self.__tableWidget.setItem(y, x, QTableWidgetItem(str(self.__grid.get_at(xy(y,x)))))
                 self.__vlayout.addWidget(self.__tableWidget)
             except Exception as e:
                 print('menu table .. failed .. exception ', e)
  def plaintextSelected(self):
      self.__textEdit.setText(self.__texts.currentText())
+ def gridDisplay(self):
+     self.__textEdit.setText(HideRevealRoutines.show(self.__grid))
  def gridExport(self):
-     self.statusBar().showMessage("exported grid size %s", self.__grid.size())
+     self.__textEdit.setText(HideRevealRoutines.export(self.__grid))
+     self.statusBar().showMessage("exported grid size %s"%self.__grid.size())
  def gridCreate(self):
      if self.__grid == None:
-         colsize = max(int(self.startY.value()),1)
-         rowsize = max(int(self.__spinx.value()),1)
+         rows = max(int(self.__spinx.value()),1)
+         cols = max(int(self.__spiny.value()),1)
          try:
-             self.__grid = CellGrid(colsize, rowsize)
+             self.__grid = CellGrid(rows, cols)
          except Exception as ex:
              self.statusBar().showMessage("Create grid failed..", ex)
              self.__grid = None
@@ -175,6 +198,9 @@ class MainWindow(QMainWindow):
          self.createTable()
          self.__hideAction.setEnabled(True)
          self.__showAction.setEnabled(True)
+         self.__revealAction.setEnabled(True)
+         self.__displayAction.setEnabled(True)
+         self.__exportAction.setEnabled(True)
          self.statusBar().showMessage(message)
      else:
          self.statusBar().showMessage("Cancelled ... grid already created")
@@ -223,7 +249,6 @@ class MainWindow(QMainWindow):
          except Exception as ex:
              self.statusBar().showMessage('Failed..' + str(ex))
              return
-         # print('Parameters ',self.__grid.lastUsedParameters())
          self.statusBar().showMessage("called hide with parameters: {} text: {}".format(self.__grid.lastUsedParameters(), self.__textEdit.toPlainText()))
          self.__revealAction.setEnabled(True)
      else:
@@ -246,10 +271,11 @@ class MainWindow(QMainWindow):
              self.statusBar().showMessage('Failed..' + str(ex))
              return
          self.statusBar().showMessage("called reveal with parameters: {}".format(self.__grid.lastUsedParameters()))
-         self.__revealAction.setEnabled(True)
      else:
          self.statusBar().showMessage("cancelled")
-
+ def gridEmpty(self):
+     self.__grid.clearAll()
+     self.statusBar().showMessage('Grid emptied')
 
 class modalHide(QDialog):
     global grid
@@ -326,16 +352,16 @@ class modalHide(QDialog):
     def createTable(self):
         # Create table
         try:
-            c = grid.size().getx()
-            r = grid.size().gety()
+            y_range = grid.size().getx()
+            x_range = grid.size().gety()
         except Exception as e:
             print('create table widget .. failed .. exception ',e)
             qApp.quit()
-        self.tableWidget = QTableWidget(c,r)
+        self.tableWidget = QTableWidget(y_range,x_range)
         try:
-            for i in range(c):
-                for j in range(r):
-                    self.tableWidget.setItem(j, i, QTableWidgetItem(str(grid.get_at(xy(i,j)))))
+            for y in range(y_range):
+                for x in range(x_range):
+                    self.tableWidget.setItem(x, y, QTableWidgetItem(str(grid.get_at(xy(y,x)))))
         except Exception as e:
             print('failed .. exception ', e)
         # self.tableWidget.move(0, 0)
@@ -346,7 +372,6 @@ class modalHide(QDialog):
     @pyqtSlot()
     def on_click(self):
         for currentQTableWidgetItem in self.tableWidget.selectedItems():
-            # print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
             self.startX.setValue(currentQTableWidgetItem.column())
             self.startY.setValue(currentQTableWidgetItem.row())
 

@@ -1,4 +1,7 @@
 __author__ = 'naras_mg'
+
+import copy
+
 from BaseModel import *
 import logging
 def it_fits_in(grid,bandha,text):
@@ -12,11 +15,10 @@ def it_fits_in(grid,bandha,text):
             break
     if len(cipherseq) < len(text): result = False  # the entire text will not fit
     # print('cipher seq %i text %i result %s'%(len(cipherseq),len(text), result))
-    # s = ''
-    # for xy in cipherseq: s += str(xy)
-    # logging.debug('Does it fit .. Parameters %s hider sequence %s', grid.lastUsedParameters(), s)
+    s = ''
+    for xy in cipherseq: s += str(xy)
+    # if not result: logging.debug('Bandha cannot fit the text of length %s Parameters %s hider sequence %s', len(text), grid.lastUsedParameters(), s)
     return result
-
 def hide(grid,bandha,text):
     # hiding_text = ''
     cipherseq=[]
@@ -47,7 +49,6 @@ def hide_inplace(grid,bandha,text):
         logging.error('Hide failed .. Overflow %s Parameters %s',str(e), grid.lastUsedParameters())
     except Exception as e:
         logging.error('Hide failed .. Error %s Parameters %s',str(e), grid.lastUsedParameters())
-
 def reveal(grid,bandha,len_text):
     plain_text = ''
     # plainseq = []
@@ -59,9 +60,13 @@ def reveal(grid,bandha,len_text):
     # logging.info('Bandha %s revealer sequence %s',grid.lastUsedBandha(),s)
     return plain_text
 def export(grid):
-    grid.get().fillRandomNulls()
-    logging.info('exported grid size %s',str(grid.size()))
-    return show(grid)
+    gridcopy = copy.deepcopy(grid)
+    gridcopy.get().fillRandomNulls()
+    gridIterator = iter(gridcopy)
+    cells = ''
+    for _, _, cel in gridIterator: cells+=str(cel)
+    # logging.info('exported grid size %s',str(grid.size()))
+    return cells
 def show(grid):
     grid_string,i = '',0
     cols = grid.size().getx()
@@ -82,18 +87,14 @@ def show(grid):
             grid_string += str(cel) + separator
     return grid_string
 def exportTofile(grid,file,include_size=True):
-    grid.get().fillRandomNulls()
-    grid_string = ''
-    cols = grid.size().getx()
-    rows = grid.size().gety()
-    # print('export size cols %d rows %d'%(cols,rows))
-    for y in range(rows):
-        for x in range(cols):
-            grid_string += str(grid.get_at(xy(x,y)))
-            # print('export so far %s xy %s',(grid_string, str(xy(x,y))))
+    gridcopy = copy.deepcopy(grid)
+    gridcopy.get().fillRandomNulls()
+    gridIterator = iter(gridcopy)
+    cells = ''
+    for _, _, cel in gridIterator: cells+=str(cel)
     f = open(file,'w')
     if include_size: f.write(str(grid.size())+'\n')
-    f.write(grid_string)    # write the grid contents to file
+    f.write(cells)    # write the grid contents to file
     f.close()
     logging.info('exported to file - ' + file + '.. grid size %s',str(grid.size()))
     return 0
@@ -109,14 +110,15 @@ def importFromfile(file,size=None):
         colsize,rowsize=size
         grid = CellGrid(colsize,rowsize)
     grid_string = f.readline()
-    # print(grid_string)
-    # print('import .. size %s'%str(grid.size()))
-    x,y = 0,0
-    for c in grid_string:
-        grid.modify_at(Cell(c),xy(x,y))
-        x += 1
-        if x >= rowsize:
-            x = 0
-            y += 1
+    # x,y = 0,0
+    # for c in grid_string:
+    #     grid.modify_at(Cell(c),xy(x,y))
+    #     x += 1
+    #     if x >= rowsize:
+    #         x = 0
+    #         y += 1
+    gridIterator = iter(grid)
+    for (y, x, _), char in zip(gridIterator, grid_string):
+        grid.modify_at(Cell(char),xy(x,y))
     return grid
 

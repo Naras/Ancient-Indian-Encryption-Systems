@@ -273,7 +273,7 @@ class CellGrid:
         self.__content = None
         self.__empty = True
     def clearAll(self):
-        for cell in self.__content:
+        for cell in self.__content.get():
             cell.clear()
         self.__cellsEmpty = True
         self.__empty = False
@@ -293,7 +293,6 @@ class CellGrid:
                 raise StopIteration
         index = self.__currentrow * self.__rowsize + self.__currentcol
         self.__currentcol += 1
-        # print(self.__currentrow,self.__currentcol,self.__rowsize,self.__colsize, index)
         return self.__currentrow, self.__currentcol-1, self.__content.get_at(index)
     def __str__(self):
         return ','.join([str(cel) for cel in self.__content.get()])
