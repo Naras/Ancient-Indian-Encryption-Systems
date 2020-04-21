@@ -36,42 +36,7 @@ class MainWindow(QMainWindow):
     self.__textEdit = QTextEdit()
     # self.__textEdit.setText('blah drone witter agAIn and aGAIN')
     self.setCentralWidget(self.__textEdit)
-
-    f = open('plain.txt')
-    plain = f.readlines()
-    f.close()
-    plain = [s[:-1] for s in plain]
-    self.__texts = QComboBox(self)
-    self.__texts.addItems(list(plain))
-    self.__texts.setCurrentIndex(0)
-    self.__texts.currentIndexChanged.connect(self.plaintextSelected)
-    self.__textEdit.setText(plain[0])
-
-    hboxText = QHBoxLayout()
-    hboxText.addWidget(self.__textEdit)
-
-    self.__hboxTexts = QHBoxLayout()
-    self.__hboxTexts.addWidget(self.__texts)
-
-    hboxX = QHBoxLayout()
-    hboxX.addWidget(self.__labelx)
-    hboxX.addWidget(self.__spinx)
-    hboxX.addWidget(self.__sliderx)
-
-    hboxY = QHBoxLayout()
-    hboxY.addWidget(self.__labely)
-    hboxY.addWidget(self.__spiny)
-    hboxY.addWidget(self.__slidery)
-
-    widget = QWidget()
-    self.__vlayout = QVBoxLayout(widget)
-    self.__vlayout.addLayout(hboxText)
-    self.__vlayout.addLayout(self.__hboxTexts)
-    self.__vlayout.addLayout(hboxX)
-    self.__vlayout.addLayout(hboxY)
-
-    self.setCentralWidget(widget)
-    self.statusBar().showMessage('Ready')
+    self.setVLayout()
     self.toolbar = self.addToolBar('Exit')
 
     createAction = QAction ('Create', self)
@@ -160,7 +125,6 @@ class MainWindow(QMainWindow):
  def changeValueY(self, value):
      self.__spiny.setValue(value)
  def createTable(self):
-        # Create table
         try:
             y_range = self.__grid.size().getx()
             x_range = self.__grid.size().gety()
@@ -206,9 +170,8 @@ class MainWindow(QMainWindow):
          self.statusBar().showMessage("Cancelled ... grid already created")
  def gridRemove(self):
      self.__grid = None
-     self.__vlayout.removeWidget(self.__tableWidget)
      self.__tableWidget = None
-     self.setLayout(self.__vlayout)
+     self.setVLayout()
      self.__hideAction.setDisabled(True)
      self.statusBar().showMessage('Grid removed')
  def gridShow(self):
@@ -226,7 +189,6 @@ class MainWindow(QMainWindow):
                      self.__tableWidget.setItem(x, y, QTableWidgetItem(str(self.__grid.get_at(xy(y, x)))))
      except Exception as e:
          self.statusBar().showMessage('show grid .. failed .. exception ', e)
-     # self.statusBar().showMessage("grid size %s", self.__grid.size())
  def gridHide(self):
      global grid
      grid = self.__grid
@@ -276,6 +238,44 @@ class MainWindow(QMainWindow):
  def gridEmpty(self):
      self.__grid.clearAll()
      self.statusBar().showMessage('Grid emptied')
+ def setVLayout(self):
+     f = open('plain.txt')
+     plain = f.readlines()
+     f.close()
+     plain = [s[:-1] for s in plain]
+
+     self.statusBar().showMessage('Ready')
+     self.__texts = QComboBox(self)
+     self.__texts.addItems(list(plain))
+     self.__texts.setCurrentIndex(0)
+     self.__texts.currentIndexChanged.connect(self.plaintextSelected)
+     self.__textEdit.setText(plain[0])
+
+     self.__hboxText = QHBoxLayout()
+     self.__hboxText.addWidget(self.__textEdit)
+
+     self.__hboxTexts = QHBoxLayout()
+     self.__hboxTexts.addWidget(self.__texts)
+
+     self.__hboxX = QHBoxLayout()
+     self.__hboxX.addWidget(self.__labelx)
+     self.__hboxX.addWidget(self.__spinx)
+     self.__hboxX.addWidget(self.__sliderx)
+
+     self.__hboxY = QHBoxLayout()
+     self.__hboxY.addWidget(self.__labely)
+     self.__hboxY.addWidget(self.__spiny)
+     self.__hboxY.addWidget(self.__slidery)
+
+     self.__widget = QWidget()
+     self.__vlayout = QVBoxLayout(self.__widget)
+     self.__vlayout.addLayout(self.__hboxText)
+     self.__vlayout.addLayout(self.__hboxTexts)
+     self.__vlayout.addLayout(self.__hboxX)
+     self.__vlayout.addLayout(self.__hboxY)
+
+     self.setCentralWidget(self.__widget)
+
 
 class modalHide(QDialog):
     global grid
@@ -488,6 +488,7 @@ class modalReveal(QDialog):
     @pyqtSlot()
     def on_click(self):
         for currentQTableWidgetItem in self.tableWidget.selectedItems():
+            # print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
             self.startX.setValue(currentQTableWidgetItem.column())
             self.startY.setValue(currentQTableWidgetItem.row())
 
