@@ -1,6 +1,6 @@
 __author__ = 'naras_mg'
 
-import copy
+import copy,codecs
 
 from Source.Model.BaseModel import *
 import logging
@@ -92,14 +92,16 @@ def exportTofile(grid,file,include_size=True):
     gridIterator = iter(gridcopy)
     cells = ''
     for _, _, cel in gridIterator: cells+=str(cel)
-    f = open(file,'w')
+    # f = open(file,'w')
+    f = codecs.open(file,'w',encoding='utf-8')
     if include_size: f.write(str(grid.size())+'\n')
     f.write(cells)    # write the grid contents to file
     f.close()
     logging.info('exported to file - ' + file + '.. grid size %s',str(grid.size()))
     return 0
 def importFromfile(file,size=None):
-    f = open(file)
+    # f = open(file)
+    f = codecs.open(file,encoding='utf-8')
     if size==None:
         size = f.readline()
         comma = size.index(',')

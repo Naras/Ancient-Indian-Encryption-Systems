@@ -1,3 +1,5 @@
+import codecs
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QTextEdit, QLabel, QPushButton, \
     QWidget, QAction,  QSlider, QSpinBox, QHBoxLayout, QVBoxLayout, QComboBox, QTableWidget, QTableWidgetItem,qApp
 # from PyQt5.QtCore import QCoreApplication
@@ -242,7 +244,8 @@ class MainWindow(QMainWindow):
      self.__grid.clearAll()
      self.statusBar().showMessage('Grid emptied')
  def setVLayout(self):
-     f = open('../Plain.txt')
+     # f = open('../Plain.txt')
+     f = codecs.open('../Plain_IndianLanguages_Unicode.txt',encoding='utf-8')
      plain = f.readlines()
      f.close()
      plain = [s[:-1] for s in plain]
