@@ -1,6 +1,6 @@
 __author__ = 'naras_mg'
 
-import string, random, array
+import string, random, math  # array
 # import logging
 
 class Cell:
@@ -188,6 +188,7 @@ class CellGrid:
     __empty = True
     __cellsEmpty = True
     __lastUsedParameters = ('',0,0)
+    __ystart = -1
     __currentcol = 0
     __currentrow = 0
     def __sizerecalc__(self):
@@ -290,6 +291,7 @@ class CellGrid:
             self.__currentrow += 1
             if self.__currentrow >= self.__colsize:
                 self.__currentrow = 0
+                self.__ystart = -1
                 raise StopIteration
         index = self.__currentrow * self.__rowsize + self.__currentcol
         self.__currentcol += 1
@@ -310,8 +312,35 @@ class CellGrid:
         for x in range(XY.getx(), self.__rowsize):
             for y in range(XY.gety(),self.__colsize):
                 yield xy(x,y)
+    def sineBandha(self,XY=xy(0,0)):
+        self.__lastUsedParameters = ('sine Bandha',XY.getx(),XY.gety())
+        if self.__ystart < 0: self.__ystart = XY.gety()
+        for x in range(XY.getx(), self.__rowsize):
+            y = round(math.sin(x))
+            if y >= self.__colsize or y < 0: y = 0
+            yield xy(x, y + self.__ystart)
+    def cosineBandha(self,XY=xy(0,0)):
+        self.__lastUsedParameters = ('cosine Bandha',XY.getx(),XY.gety())
+        if self.__ystart < 0: self.__ystart = XY.gety()
+        for x in range(XY.getx(), self.__rowsize):
+            y = round(math.cos(x))
+            if y >= self.__colsize or y < 0: y = 0
+            yield xy(x, y + self.__ystart)
+    def heartBandha(self,XY=xy(0,0)):
+        self.__lastUsedParameters = ('heart Bandha',XY.getx(),XY.gety())
+        for x in range(XY.getx(), self.__rowsize):
+            y = round(math.sqrt(abs(10 - x * x)) + math.pow(abs(x), 2 / 3))
+            if y >= self.__colsize or y < 0: y = 0
+            yield xy(x, y)
+    def parabolaBandha(self,XY=xy(0,0)):
+        self.__lastUsedParameters = ('heart Bandha',XY.getx(),XY.gety())
+        for x in range(XY.getx(), self.__rowsize):
+            y = x * x
+            if y >= self.__colsize or y < 0: y = 0
+            yield xy(x, y)
     def lastUsedParameters(self): return self.__lastUsedParameters
     def bandhas(self,XY):
-        return {'rowByrowBandha':self.rowByrowBandha(XY), 'mukhabBandha':self.mukhaBandha(XY), 'diagnonalBandha':self.diagonalBandha(XY)}
+        return {'rowByrowBandha':self.rowByrowBandha(XY), 'mukhabBandha':self.mukhaBandha(XY), 'diagnonalBandha':self.diagonalBandha(XY),
+                'sineBandha':self.sineBandha(XY), 'cosineBandha':self.cosineBandha(XY), 'heartBandha':self.heartBandha(XY), 'parabolaBandha':self.heartBandha(XY)}
     def bandhaLiterals(self):
-        return ['rowByrowBandha','mukhabBandha','diagnonalBandha']
+        return ['rowByrowBandha','mukhabBandha','diagnonalBandha', 'sineBandha', 'cosineBandha', 'heartBandha', 'parabolaBandha']

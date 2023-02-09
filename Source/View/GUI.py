@@ -8,9 +8,11 @@ from PyQt5.QtCore import pyqtSlot
 
 from Source.Model import HideRevealRoutines
 from Source.Model.BaseModel import *
+import Graphs
 
 import sys, logging
 global grid
+
 
 class MainWindow(QMainWindow):
 
@@ -21,18 +23,18 @@ class MainWindow(QMainWindow):
     self.__labelx = QLabel(self)
     self.__labelx.setText('columns ')
     self.__spinx = QSpinBox(self)
-    self.__spinx.setValue(62)
+    self.__spinx.setValue(63)
     self.__sliderx = QSlider(Qt.Horizontal, self)
-    self.__sliderx.setValue(62)
+    self.__sliderx.setValue(63)
     self.__sliderx.setFocusPolicy(Qt.NoFocus)
     self.__sliderx.valueChanged[int].connect(self.changeValueX)
     self.__labely = QLabel(self)
     self.__labely.setText('rows     ')
     self.__spiny = QSpinBox(self)
-    self.__spiny.setValue(55)
+    self.__spiny.setValue(56)
     self.__slidery = QSlider(Qt.Horizontal, self)
     self.__slidery.setFocusPolicy(Qt.NoFocus)
-    self.__slidery.setValue(55)
+    self.__slidery.setValue(56)
     self.__slidery.valueChanged[int].connect(self.changeValueY)
 
     self.__textEdit = QTextEdit()
@@ -101,6 +103,14 @@ class MainWindow(QMainWindow):
     self.__exportAction.setDisabled(True)
     self.toolbar = self.addToolBar('Export')
     self.toolbar.addAction(self.__exportAction)
+
+    self.__plotAction = QAction ('Graph all Bandhas', self)
+    self.__plotAction.setShortcut('Ctrl+Shift+Q')
+    self.__plotAction.setStatusTip('Show all the Bandhas')
+    self.__plotAction.triggered.connect(self.bandhaGraph)
+    self.__plotAction.setDisabled(False)
+    self.toolbar = self.addToolBar('Graph')
+    self.toolbar.addAction(self.__plotAction)
 
     helpAction = QAction('Help', self)
     helpAction.setShortcut('Ctrl+Shift+P')
@@ -222,33 +232,39 @@ class MainWindow(QMainWindow):
          self.statusBar().showMessage("cancelled")
  def gridReveal(self):
      dialog = modalReveal(self)
-     if dialog.ok.text()=='Ok':
-         x = dialog.startX.value()
-         y = dialog.startY.value()
-         textLength = dialog.length.value()
-         if dialog.bandha.text() in self.__grid.bandhaLiterals():
-             bandhas = [self.__grid.rowByrowBandha(xy(x, y)), self.__grid.mukhaBandha(xy(x, y)), self.__grid.diagonalBandha(xy(x, y))]
-             bandhaUsed = bandhas[self.__grid.bandhaLiterals().index(dialog.bandha.text())]
+     try:
+         if dialog.ok.text()=='Ok':
+             x = dialog.startX.value()
+             y = dialog.startY.value()
+             textLength = dialog.length.value()
+             if dialog.bandha.text() in self.__grid.bandhaLiterals():
+                 bandhaUsed = self.__grid.bandhas(xy(x, y))[dialog.bandha.text()]
+             else:
+                 self.statusBar().showMessage("Invalid Bandha selection {}".format(dialog.bandha.text()))
+                 return
+             try:
+                 self.__textEdit.setText(HideRevealRoutines.reveal(self.__grid, bandhaUsed, textLength))
+             except Exception as ex:
+                 self.statusBar().showMessage('Failed..' + str(ex))
+                 return
+             self.statusBar().showMessage("called reveal with parameters: {}".format(self.__grid.lastUsedParameters()))
          else:
-             self.statusBar().showMessage("Invalid Bandha selection {}".format(dialog.bandha.text()))
-             return
-         try:
-             self.__textEdit.setText(HideRevealRoutines.reveal(self.__grid, bandhaUsed, textLength))
-         except Exception as ex:
-             self.statusBar().showMessage('Failed..' + str(ex))
-             return
-         self.statusBar().showMessage("called reveal with parameters: {}".format(self.__grid.lastUsedParameters()))
-     else:
-         self.statusBar().showMessage("cancelled")
+             self.statusBar().showMessage("cancelled")
+     except Exception as ex:
+         self.statusBar().showMessage('Unknown Exception..' + str(ex))
+
  def gridEmpty(self):
      self.__grid.clearAll()
      self.statusBar().showMessage('Grid emptied')
  def setVLayout(self):
      # f = open('../Plain.txt')
-     f = codecs.open('../Plain_IndianLanguages_Unicode.txt',encoding='utf-8')
+     f = codecs.open('../Plain.txt',encoding='utf-8')
      plain = f.readlines()
      f.close()
-     plain = [s[:-1] for s in plain]
+     f_uni = codecs.open('../Plain_IndianLanguages_Unicode.txt',encoding='utf-8')
+     funi = f_uni.readlines()
+     f_uni.close()
+     plain = [s[:-1] for s in plain] + [s[:-1] for s in funi]
 
      self.statusBar().showMessage('Ready')
      self.__texts = QComboBox(self)
@@ -281,7 +297,8 @@ class MainWindow(QMainWindow):
      self.__vlayout.addLayout(self.__hboxY)
 
      self.setCentralWidget(self.__widget)
-
+ def bandhaGraph(self):
+     Graphs.main()
 
 class modalHide(QDialog):
     global grid
@@ -494,7 +511,7 @@ class modalReveal(QDialog):
     @pyqtSlot()
     def on_click(self):
         for currentQTableWidgetItem in self.tableWidget.selectedItems():
-            # print(currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
+            # print('on_click:', currentQTableWidgetItem.row(), currentQTableWidgetItem.column(), currentQTableWidgetItem.text())
             self.startX.setValue(currentQTableWidgetItem.column())
             self.startY.setValue(currentQTableWidgetItem.row())
 

@@ -25,7 +25,6 @@ def main():
     if rowByrow: print('after hide .. revealing rowbyrow.. ', reveal(grid, grid.rowByrowBandha(xy(0, 0)), len(plain[0][:-1])))
     if mukha: print('mukha.. %s'%reveal(grid, grid.mukhaBandha(xy(33, 0)), len(plain[1][:-1])))
     if diagonal: print('diagonal.. %s'%reveal(grid, grid.diagonalBandha(xy(0, 44)), len(plain[2][:-1])))
-
     exportTofile(grid,'export.txt')
     grid = importFromfile('export.txt')
     if rowByrow: print('after import .. revealing ', reveal(grid, grid.rowByrowBandha(xy(0, 0)), len(plain[0][:-1])))
@@ -37,7 +36,19 @@ def main():
     if rowByrow: print('after import w/size .. revealing ', reveal(grid, grid.rowByrowBandha(xy(0, 0)), len(plain[0][:-1])))
     if mukha: print(reveal(grid, grid.mukhaBandha(xy(33, 0)), len(plain[1][:-1])))
     if diagonal: print(reveal(grid, grid.diagonalBandha(xy(0, 44)), len(plain[2][:-1])))
-
+'''
+    sineX, sineY, cosineX, cosineY, heartX, heartY = 4, 8, 12, 20, 45, 45
+    sine = it_fits_in(grid, grid.sineBandha(xy(sineX, sineY)), plain[1][:-1])
+    if sine: hide_inplace(grid, grid.sineBandha(xy(sineX, sineY)), plain[1][:-1])  # 'main duniya  mein akela hun')
+    cosine = it_fits_in(grid, grid.cosineBandha(xy(cosineX, cosineY)), plain[0][:-1])
+    if cosine: hide_inplace(grid, grid.cosineBandha(xy(cosineX, cosineY)), plain[0][:-1])  # 'main duniya  mein akela hun')
+    heart = it_fits_in(grid, grid.cosineBandha(xy(heartX, heartY)), plain[2][:-1])
+    if heart: hide_inplace(grid, grid.heartBandha(xy(heartX, heartY)), plain[2][:-1])  # 'main duniya  mein akela hun')
+    print('sine %s cosine %s heart %s' % (sine, cosine, heart))
+    if sine: print('sine.. %s'%reveal(grid, grid.sineBandha(xy(sineX, sineY)), len(plain[1][:-1])))
+    if cosine: print('cosine.. %s'%reveal(grid, grid.cosineBandha(xy(cosineX, cosineY)), len(plain[0][:-1])))
+    if heart: print('heart.. %s'%reveal(grid, grid.heartBandha(xy(heartX, heartY)), len(plain[2][:-1])))
+'''
 
 if __name__ == '__main__':
     main()
