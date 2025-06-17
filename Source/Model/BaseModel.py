@@ -340,7 +340,7 @@ class CellGrid:
             yield xy(x, y)
     def lastUsedParameters(self): return self.__lastUsedParameters
     def bandhas(self,XY):
-        return {'rowByrowBandha':self.rowByrowBandha(XY), 'mukhabBandha':self.mukhaBandha(XY), 'diagnonalBandha':self.diagonalBandha(XY),
+        return {'rowByrowBandha':self.rowByrowBandha(XY), 'mukhaBandha':self.mukhaBandha(XY), 'diagonalBandha':self.diagonalBandha(XY),
                 'sineBandha':self.sineBandha(XY), 'cosineBandha':self.cosineBandha(XY), 'heartBandha':self.heartBandha(XY), 'parabolaBandha':self.heartBandha(XY)}
     def bandhaLiterals(self):
-        return ['rowByrowBandha','mukhabBandha','diagnonalBandha', 'sineBandha', 'cosineBandha', 'heartBandha', 'parabolaBandha']
+        return ['rowByrowBandha','mukhaBandha','diagonalBandha', 'sineBandha', 'cosineBandha', 'heartBandha', 'parabolaBandha']

@@ -1,5 +1,6 @@
-import codecs
+import codecs, os
 
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QTextEdit, QLabel, QPushButton, \
     QWidget, QAction,  QSlider, QSpinBox, QHBoxLayout, QVBoxLayout, QComboBox, QTableWidget, QTableWidgetItem,qApp
 # from PyQt5.QtCore import QCoreApplication
@@ -23,18 +24,18 @@ class MainWindow(QMainWindow):
     self.__labelx = QLabel(self)
     self.__labelx.setText('columns ')
     self.__spinx = QSpinBox(self)
-    self.__spinx.setValue(63)
+    self.__spinx.setValue(62)
     self.__sliderx = QSlider(Qt.Horizontal, self)
-    self.__sliderx.setValue(63)
+    self.__sliderx.setValue(62)
     self.__sliderx.setFocusPolicy(Qt.NoFocus)
     self.__sliderx.valueChanged[int].connect(self.changeValueX)
     self.__labely = QLabel(self)
     self.__labely.setText('rows     ')
     self.__spiny = QSpinBox(self)
-    self.__spiny.setValue(56)
+    self.__spiny.setValue(55)
     self.__slidery = QSlider(Qt.Horizontal, self)
     self.__slidery.setFocusPolicy(Qt.NoFocus)
-    self.__slidery.setValue(56)
+    self.__slidery.setValue(55)
     self.__slidery.valueChanged[int].connect(self.changeValueY)
 
     self.__textEdit = QTextEdit()
@@ -96,13 +97,29 @@ class MainWindow(QMainWindow):
     self.toolbar = self.addToolBar('Display')
     self.toolbar.addAction(self.__displayAction)
 
-    self.__exportAction = QAction ('Noise-fill', self)
+    self.__exportAction = QAction('Noise-fill', self)
     self.__exportAction.setShortcut('Ctrl+Shift+N')
     self.__exportAction.setStatusTip('Noise-fill Grid and display to Text Area')
     self.__exportAction.triggered.connect(self.gridExport)
     self.__exportAction.setDisabled(True)
-    self.toolbar = self.addToolBar('Export')
+    self.toolbar = self.addToolBar('Noise-fill')
     self.toolbar.addAction(self.__exportAction)
+
+    self.__exporttofileAction = QAction('Export', self)
+    self.__exporttofileAction.setShortcut('Ctrl+Shift+X')
+    self.__exporttofileAction.setStatusTip('Export to file(export.txt)')
+    self.__exporttofileAction.triggered.connect(self.gridExporttoFile)
+    self.__exporttofileAction.setDisabled(True)
+    self.toolbar = self.addToolBar('Export')
+    self.toolbar.addAction(self.__exporttofileAction)
+
+    self.__importfromfileAction = QAction('Import', self)
+    self.__importfromfileAction.setShortcut('Ctrl+Shift+I')
+    self.__importfromfileAction.setStatusTip('Import from file(export.txt)')
+    self.__importfromfileAction.triggered.connect(self.gridImportfromFile)
+    self.__importfromfileAction.setDisabled(False)
+    self.toolbar = self.addToolBar('Import')
+    self.toolbar.addAction(self.__importfromfileAction)
 
     self.__plotAction = QAction ('Graph all Bandhas', self)
     self.__plotAction.setShortcut('Ctrl+Shift+Q')
@@ -136,22 +153,41 @@ class MainWindow(QMainWindow):
      self.__spinx.setValue(value)
  def changeValueY(self, value):
      self.__spiny.setValue(value)
+
  def createTable(self):
-        try:
-            y_range = self.__grid.size().getx()
-            x_range = self.__grid.size().gety()
-        except Exception as e:
-            print('menu table .. failed .. exception ',e)
-            qApp.quit()
-        if self.__tableWidget == None:
-            self.__tableWidget = QTableWidget(y_range,x_range)
-            try:
-                for y in range(y_range):
-                    for x in range(x_range):
-                        self.__tableWidget.setItem(y, x, QTableWidgetItem(str(self.__grid.get_at(xy(y,x)))))
-                self.__vlayout.addWidget(self.__tableWidget)
-            except Exception as e:
-                print('menu table .. failed .. exception ', e)
+     try:
+         x_range = self.__grid.size().getx()
+         y_range = self.__grid.size().gety()
+     except Exception as e:
+         print('import grid .. failed .. exception ', e)
+         qApp.quit()
+     if self.__tableWidget == None:
+         self.__tableWidget = QTableWidget(x_range, y_range)
+         try:
+             for y in range(y_range):
+                 for x in range(x_range):
+                     self.__tableWidget.setItem(x, y, QTableWidgetItem(str(self.__grid.get_at(xy(x, y)))))
+             self.__vlayout.addWidget(self.__tableWidget)
+         except Exception as e:
+             print('menu table .. failed .. exception ', e)
+
+ def createTableforImport(self):
+     try:
+         x_range = self.__grid.size().getx()
+         y_range = self.__grid.size().gety()
+     except Exception as e:
+         print('import grid .. failed .. exception ', e)
+         qApp.quit()
+     if self.__tableWidget == None:
+         self.__tableWidget = QTableWidget(x_range, y_range)
+         try:
+             for y in range(y_range):
+                 for x in range(x_range):
+                     self.__tableWidget.setItem(y, x, QTableWidgetItem(str(self.__grid.get_at(xy(x, y)))))
+             self.__vlayout.addWidget(self.__tableWidget)
+         except Exception as e:
+             print('import grid .. failed .. exception ', e)
+
  def plaintextSelected(self):
      self.__textEdit.setText(self.__texts.currentText())
  def gridDisplay(self):
@@ -159,6 +195,29 @@ class MainWindow(QMainWindow):
  def gridExport(self):
      self.__textEdit.setText(HideRevealRoutines.export(self.__grid))
      self.statusBar().showMessage("exported grid size %s"%self.__grid.size())
+ def gridExporttoFile(self, file='export.txt'):
+     file = os.path.join('export.txt')
+     HideRevealRoutines.exportTofile(self.__grid, file)
+     self.statusBar().showMessage("exported grid size %s"%self.__grid.size())
+     if os.path.isfile(file): self.__importfromfileAction.setEnabled(True)
+ def gridImportfromFile(self, file='export.txt'):
+     global grid
+     file = os.path.join('export.txt')  #  ../../Tests/
+     if os.path.isfile(file):
+         self.__grid = HideRevealRoutines.importFromfile(file)
+         self.statusBar().showMessage("imported grid size %s"%self.__grid.size())
+         self.__tableWidget = None
+         self.createTableforImport()
+         self.__hideAction.setEnabled(True)
+         self.__showAction.setEnabled(True)
+         self.__revealAction.setEnabled(True)
+         self.__displayAction.setEnabled(True)
+         self.__exportAction.setEnabled(True)
+         self.__exporttofileAction.setEnabled(True)
+
+         grid = self.__grid
+
+     else: self.statusBar().showMessage("file %s not found"%file)
  def gridCreate(self):
      if self.__grid == None:
          rows = max(int(self.__spinx.value()),1)
@@ -177,6 +236,9 @@ class MainWindow(QMainWindow):
          self.__revealAction.setEnabled(True)
          self.__displayAction.setEnabled(True)
          self.__exportAction.setEnabled(True)
+         self.__exporttofileAction.setEnabled(True)
+         # self.__importfromfileAction.setEnabled(True)
+
          self.statusBar().showMessage(message)
      else:
          self.statusBar().showMessage("Cancelled ... grid already created")
@@ -199,9 +261,15 @@ class MainWindow(QMainWindow):
          if self.__tableWidget == None:
              self.statusBar().showMessage('menu show .. no grid')
          else:
+             font = QFont("Arial", 10, QFont.Bold)
              for y in range(y_range):
                  for x in range(x_range):
                      self.__tableWidget.setItem(x, y, QTableWidgetItem(str(self.__grid.get_at(xy(y, x)))))
+                     if not self.__grid.get_at(xy(y, x)).isEmpty():
+                         item = QTableWidgetItem(str(self.__grid.get_at(xy(y, x))))
+                         item.setFont(font)
+                         item.setForeground(QColor(0, 0, 255))
+                         self.__tableWidget.setItem(x, y, item)
      except Exception as e:
          self.statusBar().showMessage('show grid .. failed .. exception ', e)
  def gridHide(self):
@@ -219,7 +287,7 @@ class MainWindow(QMainWindow):
              return
          try:
              if HideRevealRoutines.it_fits_in(self.__grid, bandhaCopy, self.__textEdit.toPlainText()):
-                 HideRevealRoutines.hide_inplace(self.__grid, bandhaUsed, self.__textEdit.toPlainText())
+                 HideRevealRoutines.hide_inplace(self.__grid, bandhaUsed, self.__textEdit.toPlainText()[:-1])
              else:
                  self.statusBar().showMessage('cannot fit in full text into bandha, parameters {} text: {}'.format(self.__grid.lastUsedParameters(),self.__textEdit.toPlainText()))
                  return
@@ -231,6 +299,7 @@ class MainWindow(QMainWindow):
      else:
          self.statusBar().showMessage("cancelled")
  def gridReveal(self):
+     global grid
      dialog = modalReveal(self)
      try:
          if dialog.ok.text()=='Ok':

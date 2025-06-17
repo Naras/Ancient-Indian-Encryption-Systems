@@ -122,5 +122,6 @@ def importFromfile(file,size=None):
     gridIterator = iter(grid)
     for (y, x, _), char in zip(gridIterator, grid_string):
         grid.modify_at(Cell(char),xy(x,y))
+    logging.info('imported from file - ' + file + '.. grid size %s',str(grid.size()))
     return grid
 
