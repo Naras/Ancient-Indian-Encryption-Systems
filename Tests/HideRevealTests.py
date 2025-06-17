@@ -13,6 +13,10 @@ def main():
     plain = [line[:-1] for line in f.readlines()]
     f.close()
     # for line in plain: print(len(line), line)
+<<<<<<< HEAD
+
+=======
+>>>>>>> 3b9eede146b1fa1f0c32a5d36b0f3e4ebfc69d9f
     r, c = 62, 55  # 92, 75
     grid = CellGrid(r, c)
     bandhasFit, bandhas, xys = [], [grid.rowByrowBandha, grid.mukhaBandha, grid.diagonalBandha], [xy(0, 0), xy(26, 0), xy(0, 31)]

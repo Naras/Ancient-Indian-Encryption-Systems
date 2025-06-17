@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+.idea
+.vscode
+static/
+node_modules
+*lock
+*lock*
+.DS_Store

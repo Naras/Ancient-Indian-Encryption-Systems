@@ -1,9 +1,11 @@
 __author__ = 'naras_mg'
 
-import copy,codecs
+import copy, codecs
+import os
 
 from Source.Model.BaseModel import *
 import logging
+
 def it_fits_in(grid,bandha,text):
     if len(text) > grid.size().getx() * grid.size().gety(): return False
     cipherseq=[]
@@ -45,10 +47,13 @@ def hide_inplace(grid,bandha,text):
         s=''
         for xy in cipherseq: s += str(xy)
         logging.info('Parameters %s hider sequence %s',grid.lastUsedParameters(),s)
+        return True
     except IndexError as e:
         logging.error('Hide failed .. Overflow %s Parameters %s',str(e), grid.lastUsedParameters())
+        return False
     except Exception as e:
         logging.error('Hide failed .. Error %s Parameters %s',str(e), grid.lastUsedParameters())
+        return False
 def reveal(grid,bandha,len_text):
     plain_text = ''
     # plainseq = []
@@ -67,24 +72,31 @@ def export(grid):
     for _, _, cel in gridIterator: cells+=str(cel)
     # logging.info('exported grid size %s',str(grid.size()))
     return cells
-def show(grid):
+def show(grid, separate=True):
     grid_string,i = '',0
     cols = grid.size().getx()
     rows = grid.size().gety()
-    for y in range(rows):
-        for x in range(cols):
-            if i >= grid.size().getx() - 1:
-                i = 0
-                separator = '\n'
-                cel = grid.get_at(xy(x,y))
-            else:
-                i += 1
-                separator = ''
+    if separate:
+        for y in range(rows):
+            for x in range(cols):
+                if i >= grid.size().getx() - 1:
+                    i = 0
+                    separator = '\n'
+                    cel = grid.get_at(xy(x,y))
+                else:
+                    i += 1
+                    separator = ''
+                    cel = grid.get_at(xy(x, y))
+                if cel.isEmpty():
+                    cel = '.'
+            # else:
+                grid_string += str(cel) + separator
+    else:
+        for y in range(rows):
+            for x in range(cols):
                 cel = grid.get_at(xy(x, y))
-            if cel.isEmpty():
-                cel = '.'
-        # else:
-            grid_string += str(cel) + separator
+                if cel.isEmpty(): cel = '.'
+                grid_string += str(cel)
     return grid_string
 def exportTofile(grid,file,include_size=True):
     gridcopy = copy.deepcopy(grid)
@@ -92,15 +104,16 @@ def exportTofile(grid,file,include_size=True):
     gridIterator = iter(gridcopy)
     cells = ''
     for _, _, cel in gridIterator: cells+=str(cel)
+    file = os.path.join(file)
     # f = open(file,'w')
     f = codecs.open(file,'w',encoding='utf-8')
     if include_size: f.write(str(grid.size())+'\n')
     f.write(cells)    # write the grid contents to file
     f.close()
-    logging.info('exported to file - ' + file + '.. grid size %s',str(grid.size()))
-    return 0
+    logging.info(f'exported to file - {file} .. grid size {grid.size()}')
+    return f'exported to file - {file} .. grid size {grid.size()}'
 def importFromfile(file,size=None):
-    # f = open(file)
+    file = os.path.join(file)
     f = codecs.open(file,encoding='utf-8')
     if size==None:
         size = f.readline()

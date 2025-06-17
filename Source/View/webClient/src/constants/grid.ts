@@ -1,0 +1,15 @@
+export const GRID_SETTINGS = {
+  MIN_ROWS: 5,
+  MAX_ROWS: 999,
+  MIN_COLS: 5,
+  MAX_COLS: 999,
+  MIN_X: 0,
+  MAX_X: 999,
+  MIN_Y: 0,
+  MAX_Y: 999,
+  DEFAULT_ROWS: 50,
+  DEFAULT_COLS: 50,
+  DEFAULT_X: 0,
+  DEFAULT_Y: 0,
+  DEFAULT_LENGTH: 25
+}; 

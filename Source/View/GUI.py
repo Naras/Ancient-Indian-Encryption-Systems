@@ -7,11 +7,22 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QTextEdit, QLabe
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSlot
 
+# Add the project root to Python path
+import sys
+from pathlib import Path
+project_root = str(Path(__file__).parent.parent.parent)
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
 from Source.Model import HideRevealRoutines
 from Source.Model.BaseModel import *
 import Graphs
+<<<<<<< HEAD
+=======
 
+>>>>>>> 3b9eede146b1fa1f0c32a5d36b0f3e4ebfc69d9f
 import sys, logging
+
 global grid
 
 
@@ -24,7 +35,7 @@ class MainWindow(QMainWindow):
     self.__labelx = QLabel(self)
     self.__labelx.setText('columns ')
     self.__spinx = QSpinBox(self)
-    self.__spinx.setValue(62)
+    self.__spinx.setValue(99)
     self.__sliderx = QSlider(Qt.Horizontal, self)
     self.__sliderx.setValue(62)
     self.__sliderx.setFocusPolicy(Qt.NoFocus)
@@ -32,7 +43,7 @@ class MainWindow(QMainWindow):
     self.__labely = QLabel(self)
     self.__labely.setText('rows     ')
     self.__spiny = QSpinBox(self)
-    self.__spiny.setValue(55)
+    self.__spiny.setValue(99)
     self.__slidery = QSlider(Qt.Horizontal, self)
     self.__slidery.setFocusPolicy(Qt.NoFocus)
     self.__slidery.setValue(55)
@@ -327,10 +338,17 @@ class MainWindow(QMainWindow):
      self.statusBar().showMessage('Grid emptied')
  def setVLayout(self):
      # f = open('../Plain.txt')
+<<<<<<< HEAD
+     f = codecs.open(os.path.join(project_root, 'Source/Plain.txt'),encoding='utf-8')
+     plain = f.readlines()
+     f.close()
+     f_uni = codecs.open(os.path.join(project_root, 'Source/Plain_IndianLanguages_Unicode.txt'),encoding='utf-8')
+=======
      f = codecs.open('../Plain.txt',encoding='utf-8')
      plain = f.readlines()
      f.close()
      f_uni = codecs.open('../Plain_IndianLanguages_Unicode.txt',encoding='utf-8')
+>>>>>>> 3b9eede146b1fa1f0c32a5d36b0f3e4ebfc69d9f
      funi = f_uni.readlines()
      f_uni.close()
      plain = [s[:-1] for s in plain] + [s[:-1] for s in funi]
@@ -367,7 +385,11 @@ class MainWindow(QMainWindow):
 
      self.setCentralWidget(self.__widget)
  def bandhaGraph(self):
+<<<<<<< HEAD
+     return Graphs.main()
+=======
      Graphs.main()
+>>>>>>> 3b9eede146b1fa1f0c32a5d36b0f3e4ebfc69d9f
 
 class modalHide(QDialog):
     global grid
